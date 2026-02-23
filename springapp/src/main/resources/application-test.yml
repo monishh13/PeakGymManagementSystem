@@ -1,0 +1,21 @@
+# Disable all Spring Security auto-configuration for tests
+
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration
+
+  security:
+    enabled: false
+
+
+
+# test-only logging (optional)
+
+  logging:
+    level:
+      org.springframework.security: DEBUG
+      com.examly.springapp: DEBUG
+
