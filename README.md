@@ -1,5 +1,3 @@
----
-
 # 🏋️ Peak – Gym Management System
 
 ### 🎓 Academic Project
