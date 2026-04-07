@@ -272,6 +272,22 @@ spring.jpa.hibernate.ddl-auto=update
 
 ---
 
+# 🚀 Production Readiness Upgrades
+
+Peak has been recently upgraded to meet modern production standards. Below are the key improvements:
+
+#### Phase 1: Security & Ownership
+* **JWT Authentication:** Implemented Spring Security using BCrypt password hashing and stateless JSON Web Tokens.
+* **Role-Based Access Control (RBAC):** Tightened endpoints utilizing `@PreAuthorize` to ensure only `TRAINER` accounts can create and assign workout plans.
+* **Service-Level Ownership Verification:** Secured PUT/DELETE operations to ensure users can only modify workout plans they successfully created.
+
+#### Phase 2: Structural Integrity
+* **Flyway Migrations:** Replaced unpredictable Hibernate `ddl-auto: update` behaviors with deterministic SQL schema version control (baseline `V1__init_schema.sql`).
+* **Soft-Deletes:** Converted direct `DELETE FROM` SQL commands to use `isActive` flags (soft deletes) on Users and WorkoutPlans, preserving historical progress logs and referential integrity.
+* **Pagination (Prev/Next):** Scaled list-fetching API calls by converting `/api/workout-plans` and `/users` to use Spring Data REST `Pageable` parameters, supported strictly by updated React views to handle large volumes gracefully without triggering Memory Leaks.
+
+---
+
 # 🎓 Academic Context
 
 This project was developed as part of an academic curriculum to demonstrate:

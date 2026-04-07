@@ -3,8 +3,9 @@ package com.examly.springapp.service;
 import java.time.LocalDate;
 
 import java.util.List;
-
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -34,10 +35,12 @@ public class UserService {
 
     private PasswordEncoder passwordEncoder;
 
+    public Page<User> getAllUsers(Pageable pageable) {
+        return userRepository.findAllByIsActiveTrue(pageable);
+    }
+
     public List<User> getAllUsers() {
-
-        return userRepository.findAll();
-
+        return userRepository.findAllByIsActiveTrue();
     }
 
     /**

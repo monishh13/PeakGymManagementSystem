@@ -60,26 +60,33 @@ public class WorkoutPlan {
     @Column(nullable = false)
     @NotNull
     private LocalDate creationDate;
+
+    @Column(columnDefinition = "boolean default true")
+    @Builder.Default
+    private Boolean isActive = true;
     
     public WorkoutPlan(Long planId) {
         this.planId=planId;
     }
     @OneToMany(mappedBy = "workoutPlan")
-   // @JsonManagedReferen
-    private List<Exercise> exercises;
+    @Builder.Default
+    private List<Exercise> exercises = new ArrayList<>();
 
     @ManyToMany
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Builder.Default
     private Set<User> assignedMembers=new HashSet<>();
 
     @OneToMany(mappedBy = "workoutPlan", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Builder.Default
     private List<PlanExercise> planExercises=new ArrayList<>();
 
     @OneToMany(mappedBy="workoutPlan", fetch=FetchType.LAZY)
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @JsonIgnore
-    private List<ProgressLog> progressLogs;
+    @Builder.Default
+    private List<ProgressLog> progressLogs = new ArrayList<>();
 
 
 }

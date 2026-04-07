@@ -21,18 +21,19 @@ const getAuthHeaders = () => {
 
 
 const handleResponse = async (response) => {
-
     if (!response.ok) {
+        if (response.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userRole');
+            window.location.href = '/login';
+            throw new Error('Session expired. Please login again.');
+        }
 
         const error = await response.json().catch(() => ({ error: 'Network error' }));
-
         throw new Error(error.error || error.message || 'Request failed');
-
     }
-
     return response.json();
-
-    };
+};
 
 
 
@@ -63,16 +64,11 @@ const handleResponse = async (response) => {
 
         // Users
 
-        getUsers: async () => {
-
-            const response = await fetch(`${API_BASE_URL}/users`, {
-
+        getUsers: async (page = 0, size = 10) => {
+            const response = await fetch(`${API_BASE_URL}/users?page=${page}&size=${size}`, {
                 headers: getAuthHeaders()
-
             });
-
             return handleResponse(response);
-
         },
 
 
@@ -145,17 +141,12 @@ const handleResponse = async (response) => {
 
         // Workout Plans
 
-        getWorkoutPlans: async () => {
-
-            const response = await fetch(`${API_BASE_URL}/api/workout-plans`, {
-
+        getWorkoutPlans: async (page = 0, size = 10) => {
+            const response = await fetch(`${API_BASE_URL}/api/workout-plans?page=${page}&size=${size}`, {
                 headers: getAuthHeaders()
-
             });
-
             return handleResponse(response);
-
-            },
+        },
 
 
 

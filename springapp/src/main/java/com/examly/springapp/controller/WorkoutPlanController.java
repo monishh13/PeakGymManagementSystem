@@ -5,6 +5,10 @@ package com.examly.springapp.controller;
 import com.examly.springapp.model.WorkoutPlan;
 import com.examly.springapp.model.dto.EnhancedPlan;
 import com.examly.springapp.service.WorkoutPlanService;
+import com.examly.springapp.dto.WorkoutPlanResponseDTO;
+import com.examly.springapp.dto.Mappers;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import jakarta.validation.Valid;
 
@@ -33,34 +37,37 @@ public class WorkoutPlanController {
     private WorkoutPlanService workoutPlanService;
 
     @GetMapping
-
-    public ResponseEntity<List<WorkoutPlan>> getAllWorkoutPlans() {
-
-        return new ResponseEntity<>(workoutPlanService.getAllWorkoutPlans(), HttpStatus.OK);
-
+    public ResponseEntity<Page<WorkoutPlanResponseDTO>> getAllWorkoutPlans(Pageable pageable) {
+        Page<WorkoutPlanResponseDTO> page = workoutPlanService.getPaginatedWorkoutPlans(pageable)
+                .map(Mappers::mapToWorkoutPlanResponseDTO);
+        return new ResponseEntity<>(page, HttpStatus.OK);
     }
 
-
-
     @GetMapping("/{planId}")
-
-    public ResponseEntity<WorkoutPlan> getWorkoutPlanById(@PathVariable Long planId) {
-
+    public ResponseEntity<WorkoutPlanResponseDTO> getWorkoutPlanById(@PathVariable Long planId) {
         WorkoutPlan plan = workoutPlanService.getWorkoutPlanById(planId);
-
-        return plan != null ? new ResponseEntity<>(plan, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
-
+        return plan != null ? new ResponseEntity<>(Mappers.mapToWorkoutPlanResponseDTO(plan), HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PostMapping
-
-    public ResponseEntity<WorkoutPlan> createWorkoutPlan(@Valid @RequestBody WorkoutPlan plan) {
-
-
+    @PreAuthorize("hasAnyRole('TRAINER', 'ADMIN')")
+    public ResponseEntity<WorkoutPlanResponseDTO> createWorkoutPlan(@Valid @RequestBody WorkoutPlan plan) {
         WorkoutPlan savedPlan = workoutPlanService.createWorkoutPlan(plan);
+        return new ResponseEntity<>(Mappers.mapToWorkoutPlanResponseDTO(savedPlan), HttpStatus.CREATED);
+    }
 
-        return new ResponseEntity<>(savedPlan, HttpStatus.CREATED);
+    @PutMapping("/{planId}")
+    @PreAuthorize("hasAnyRole('TRAINER', 'ADMIN')")
+    public ResponseEntity<WorkoutPlanResponseDTO> updateWorkoutPlan(@PathVariable Long planId, @Valid @RequestBody WorkoutPlan planUpdates) {
+        WorkoutPlan updated = workoutPlanService.updateWorkoutPlan(planId, planUpdates);
+        return new ResponseEntity<>(Mappers.mapToWorkoutPlanResponseDTO(updated), HttpStatus.OK);
+    }
 
+    @DeleteMapping("/{planId}")
+    @PreAuthorize("hasAnyRole('TRAINER', 'ADMIN')")
+    public ResponseEntity<Void> deleteWorkoutPlan(@PathVariable Long planId) {
+        workoutPlanService.deleteWorkoutPlan(planId);
+        return ResponseEntity.noContent().build();
     }
     // @PostMapping
 

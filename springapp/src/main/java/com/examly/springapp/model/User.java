@@ -47,9 +47,12 @@ public class User {
     private LocalDate joinDate;
 
     @Column(nullable = false)
-    // @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // accept in POST, hide in GET
     @NotNull(message = "Password cannot be null")
     private String password;
+
+    @Column(columnDefinition = "boolean default true")
+    @Builder.Default
+    private Boolean isActive = true;
     @Tolerate
     public User(Long userId) {
         this.userId=userId;

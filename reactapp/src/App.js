@@ -19,7 +19,7 @@ import ProgressTracker from './components/ProgressTracker';
 import LoginPage from './components/LoginPage';
 
 import LandingPage from './components/LandingPage';
-
+import PrivateRoute from './components/PrivateRoute';
 import './components/theme.css';
 
 
@@ -77,28 +77,23 @@ function App() {
 
 
                             <div className="container">
-
                                 <Routes>
-
-                                    <Route path="/" element={<Dashboard />} />
-
                                     <Route path="/landing" element={<LandingPage />} />
-
                                     <Route path="/login" element={<LoginPage />} />
+                                    
+                                    <Route element={<PrivateRoute />}>
+                                        <Route path="/" element={<Dashboard />} />
+                                        <Route path="/workout-plans" element={<WorkoutPlanList />} />
+                                        <Route path="/workout-plans/:planId" element={<WorkoutPlanDetail />} />
+                                        <Route path="/progress/:userId" element={<ProgressTracker />} />
+                                    </Route>
 
-                                    <Route path="/users" element={<UserList />} />
-
-                                    <Route path="/users/:userId" element={<UserDetail />} />
-
-                                    <Route path="/workout-plans" element={<WorkoutPlanList />} />
-
-                                    <Route path="/workout-plans/:planId" element={<WorkoutPlanDetail />} />
-
-                                    <Route path="/progress/:userId" element={<ProgressTracker />} />
-
-                                    </Routes>
-
-                                    </div>
+                                    <Route element={<PrivateRoute allowedRoles={['ADMIN', 'TRAINER']} />}>
+                                        <Route path="/users" element={<UserList />} />
+                                        <Route path="/users/:userId" element={<UserDetail />} />
+                                    </Route>
+                                </Routes>
+                            </div>
 
                                     </div>
 

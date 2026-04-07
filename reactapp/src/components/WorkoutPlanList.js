@@ -13,53 +13,38 @@ import './LandingPags.css';
 function WorkoutPlanList() {
 
     const [plans, setPlans] = useState([]);
-
     const [filteredPlans, setFilteredPlans] = useState([]);
-
     const [loading, setLoading] = useState(true);
-
     const [error, setError] = useState('');
-
     const [difficultyFilter, setDifficultyFilter] = useState('');
-
     const [searchTerm, setSearchTerm] = useState('');
-
-
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
 
     useEffect(() => {
-
         loadWorkoutPlans();
-
-    }, []);
-
-
+    }, [currentPage]);
 
     useEffect(() => {
-
         filterPlans();
-
     }, [plans, difficultyFilter, searchTerm]);
 
-
-
     const loadWorkoutPlans = async () => {
-
         try {
-
-            const plansData = await api.getWorkoutPlans();
-
-            setPlans(plansData);
-
+            setLoading(true);
+            const plansData = await api.getWorkoutPlans(currentPage, 10);
+            if (plansData && plansData.content) {
+                setPlans(plansData.content);
+                setTotalPages(plansData.totalPages);
+            } else {
+                setPlans(Array.isArray(plansData) ? plansData : []);
+                setTotalPages(1);
+            }
         } catch (err) {
-
             setError(err.message || 'Failed to fetch plans');
-
         } finally {
-
             setLoading(false);
-
         }
-
     };
 
 
@@ -345,6 +330,23 @@ function WorkoutPlanList() {
                                                     )}
 
                                                     </div>
+                                            <div className="pagination-controls" style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', gap: '10px' }}>
+                                                <button 
+                                                    className="btn secondary" 
+                                                    disabled={currentPage === 0} 
+                                                    onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                                                >
+                                                    Previous
+                                                </button>
+                                                <span style={{ alignSelf: 'center' }}>Page {currentPage + 1} of {Math.max(1, totalPages)}</span>
+                                                <button 
+                                                    className="btn secondary" 
+                                                    disabled={currentPage >= totalPages - 1} 
+                                                    onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+                                                >
+                                                    Next
+                                                </button>
+                                            </div>
 
 
 

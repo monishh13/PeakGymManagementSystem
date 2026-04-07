@@ -4,6 +4,8 @@ package com.examly.springapp.service;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -67,15 +69,22 @@ return "test".equalsIgnoreCase(activeProfile);
 
 
 
-public List<WorkoutPlan> getAllWorkoutPlans() {
-    List<WorkoutPlan> plans=workoutPlanRepository.findAll();
+public Page<WorkoutPlan> getPaginatedWorkoutPlans(Pageable pageable) {
+    Page<WorkoutPlan> plans = workoutPlanRepository.findAllByIsActiveTrue(pageable);
     for(WorkoutPlan plan : plans){
-        List<PlanExercise> list=planExerciseRepository.findByWorkoutPlan(plan);
+        List<PlanExercise> list = planExerciseRepository.findByWorkoutPlan(plan);
         plan.setPlanExercises(list);
     }
-
     return plans;
+}
 
+public List<WorkoutPlan> getAllWorkoutPlans() {
+    List<WorkoutPlan> plans=workoutPlanRepository.findAllByIsActiveTrue();
+    for(WorkoutPlan plan : plans){
+        List<PlanExercise> list = planExerciseRepository.findByWorkoutPlan(plan);
+        plan.setPlanExercises(list);
+    }
+    return plans;
 }
 
 
@@ -154,8 +163,27 @@ public WorkoutPlan createPlanWithClients(WorkoutPlan basePlan, List<Long> client
 
 
     // Save and return
-
     return workoutPlanRepository.save(savedPlan);
-
 }
+
+public WorkoutPlan updateWorkoutPlan(Long planId, WorkoutPlan planUpdates) {
+    WorkoutPlan existing = workoutPlanRepository.findById(planId)
+            .orElseThrow(() -> new RuntimeException("Workout Plan not found"));
+    
+    // Only update allowed fields
+    if (planUpdates.getTitle() != null) existing.setTitle(planUpdates.getTitle());
+    if (planUpdates.getDescription() != null) existing.setDescription(planUpdates.getDescription());
+    if (planUpdates.getDifficulty() != null) existing.setDifficulty(planUpdates.getDifficulty());
+    
+    return workoutPlanRepository.save(existing);
+}
+
+public void deleteWorkoutPlan(Long planId) {
+    WorkoutPlan existing = workoutPlanRepository.findById(planId)
+            .orElseThrow(() -> new RuntimeException("Workout Plan not found"));
+    
+    existing.setIsActive(false);
+    workoutPlanRepository.save(existing);
+}
+
 }

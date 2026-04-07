@@ -13,53 +13,38 @@ import './LandingPags.css';
 function UserList() {
 
 const [users, setUsers] = useState([]);
-
 const [filteredUsers, setFilteredUsers] = useState([]);
-
 const [loading, setLoading] = useState(true);
-
 const [error, setError] = useState('');
-
 const [roleFilter, setRoleFilter] = useState('');
-
 const [searchTerm, setSearchTerm] = useState('');
-
-
-
-useEffect(() => {
-
-loadUsers();
-
-}, []);
-
-
+const [currentPage, setCurrentPage] = useState(0);
+const [totalPages, setTotalPages] = useState(0);
 
 useEffect(() => {
+    loadUsers();
+}, [currentPage]);
 
-filterUsers();
-
+useEffect(() => {
+    filterUsers();
 }, [users, roleFilter, searchTerm]);
 
-
-
 const loadUsers = async () => {
-
-try {
-
-const usersData = await api.getUsers();
-
-setUsers(usersData);
-
-} catch (err) {
-
-setError(err.message || 'Failed to fetch users');
-
-} finally {
-
-setLoading(false);
-
-}
-
+    try {
+        setLoading(true);
+        const usersData = await api.getUsers(currentPage, 10);
+        if (usersData && usersData.content) {
+            setUsers(usersData.content);
+            setTotalPages(usersData.totalPages);
+        } else {
+            setUsers(Array.isArray(usersData) ? usersData : []);
+            setTotalPages(1);
+        }
+    } catch (err) {
+        setError(err.message || 'Failed to fetch users');
+    } finally {
+        setLoading(false);
+    }
 };
 
 
@@ -384,6 +369,23 @@ Progress
 
 )}
 
+</div>
+<div className="pagination-controls" style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', gap: '10px' }}>
+    <button 
+        className="btn secondary" 
+        disabled={currentPage === 0} 
+        onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+    >
+        Previous
+    </button>
+    <span style={{ alignSelf: 'center' }}>Page {currentPage + 1} of {Math.max(1, totalPages)}</span>
+    <button 
+        className="btn secondary" 
+        disabled={currentPage >= totalPages - 1} 
+        onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+    >
+        Next
+    </button>
 </div>
 
 

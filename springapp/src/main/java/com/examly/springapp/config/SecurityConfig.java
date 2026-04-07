@@ -65,22 +65,16 @@ public class SecurityConfig {
 
 
 
-            // Public v1
-
-            .requestMatchers("/api/**").permitAll()
-            .requestMatchers("/auth/login").permitAll()
-
+            // Public endpoints
+            .requestMatchers("/auth/**").permitAll()
 
             // Secured v2
-
             .requestMatchers("/api/v2/admin/**").hasRole("ADMIN")
-
             .requestMatchers("/api/v2/trainer/**").hasRole("TRAINER")
             .requestMatchers("/api/v2/exercises/**").hasAnyRole("TRAINER","ADMIN")
 
-            .requestMatchers("/api/v2/**").authenticated()
-
-
+            // All other API endpoints require authentication
+            .requestMatchers("/api/**").authenticated()
 
             .anyRequest().denyAll()
 
