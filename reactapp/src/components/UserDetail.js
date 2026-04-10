@@ -1,404 +1,131 @@
-        // components/UserDetail.js - User Detail View
+// components/UserDetail.js - User Detail Profile
 
-        import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { api } from '../utils/api';
 
-        import { useParams, Link } from 'react-router-dom';
+function UserDetail() {
+    const { userId } = useParams();
+    const navigate = useNavigate();
+    const [user, setUser] = useState(null);
+    const [progress, setProgress] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
-        import { api } from '../utils/api';
+    const [isEditing, setIsEditing] = useState(false);
+    const [editForm, setEditForm] = useState(null);
 
-        import './LandingPags.css';;
+    const currentUserRole = localStorage.getItem('userRole');
 
+    useEffect(() => {
+        loadUserDetails();
+    }, [userId]);
 
-
-        function UserDetail() {
-
-        const { userId } = useParams();
-
-        const [user, setUser] = useState(null);
-
-        const [progress, setProgress] = useState([]);
-
-        const [loading, setLoading] = useState(true);
-
-        const [error, setError] = useState('');
-
-
-
-        useEffect(() => {
-
-        if (userId) {
-
-        loadUserDetail();
-
-        }
-
-        }, [userId]);
-
-
-
-        const loadUserDetail = async () => {
-
+    const loadUserDetails = async () => {
         try {
-
-        const userData = await api.getUser(userId);
-
-        setUser(userData);
-
-
-
-        // Only load progress for clients
-
-        if (userData.role === 'CLIENT' || userData.role === 'MEMBER') {
-
-        try {
-
-        const progressData = await api.getUserProgress(userId);
-
-        setProgress(progressData);
-
-        } catch (progressError) {
-
-        // Progress might not be available for all clients
-
-        setProgress([]);
-
-        }
-
-        }
-
+            setLoading(true);
+            const [userData, progressData] = await Promise.all([
+                api.getUser(userId),
+                api.getUserProgress(userId).catch(() => [])
+            ]);
+            setUser(userData);
+            setEditForm(userData);
+            setProgress(progressData || []);
         } catch (err) {
-
-        setError(err.message || 'User does not exist');
-
+            setError(err.message || 'Failed to retrieve operator record');
         } finally {
-
-        setLoading(false);
-
+            setLoading(false);
         }
+    };
 
-        };
-
-
-
-        if (loading) {
-
-        return (
-
-        <div className="user-detail">
-
-        <div className="card">
-
-        <p>Loading user details...</p>
-
-        </div>
-
-        </div>
-
-        );
-
+    const handleUpdateUser = async (e) => {
+        e.preventDefault();
+        try {
+            await api.updateUser(userId, editForm);
+            setUser(editForm);
+            setIsEditing(false);
+        } catch (err) {
+            setError(err.message || 'Update failed');
         }
+    };
 
+    if (loading) return <p className="text-muted u-center mt-lg">Decrypting operator file...</p>;
+    if (error) return <div className="badge danger mb-lg">{error}</div>;
+    if (!user) return <div className="badge warning mb-lg">Record Not Found</div>;
 
+    const completedWorkouts = Array.isArray(progress) ? progress.length : 0;
 
-        if (error) {
+    return (
+        <div data-testid="user-detail-container">
+            <div className="flex-space mb-md">
+                <button className="btn secondary small" onClick={() => navigate('/users')}>← Enlisted Directory</button>
+                {currentUserRole === 'ADMIN' && (
+                    <button className="btn small" onClick={() => setIsEditing(!isEditing)}>
+                        {isEditing ? 'Cancel Edit' : 'Modify Record'}
+                    </button>
+                )}
+            </div>
 
-        return (
+            {isEditing ? (
+                <div className="card mb-lg">
+                    <h3 className="title mb-md">Update Operator Data</h3>
+                    <form onSubmit={handleUpdateUser}>
+                        <div className="form-field">
+                            <label>Alias (Username)</label>
+                            <input className="input" type="text" value={editForm.username} onChange={e => setEditForm({...editForm, username: e.target.value})} required />
+                        </div>
+                        <div className="form-field">
+                            <label>Channel (Email)</label>
+                            <input className="input" type="email" value={editForm.email} onChange={e => setEditForm({...editForm, email: e.target.value})} required />
+                        </div>
+                        <div className="form-field">
+                            <label>Designation (Role)</label>
+                            <select className="select" value={editForm.role} onChange={e => setEditForm({...editForm, role: e.target.value})}>
+                                <option value="CLIENT">Client</option>
+                                <option value="TRAINER">Trainer</option>
+                                <option value="ADMIN">Admin</option>
+                            </select>
+                        </div>
+                        <button type="submit" className="btn">Save Configuration</button>
+                    </form>
+                </div>
+            ) : (
+                <div className="card mb-lg" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+                    <div style={{ width: '120px', height: '120px', borderRadius: '50%', background: 'var(--kv-surface-container-high)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', fontWeight: 600, color: 'var(--kv-primary)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        {user.username ? user.username.charAt(0).toUpperCase() : '?'}
+                    </div>
+                    <div>
+                        <div className={`badge ${user.role === 'ADMIN' ? 'primary' : user.role === 'TRAINER' ? 'neutral' : 'warning'} mb-xs`}>
+                            {user.role} 
+                        </div>
+                        <h1 className="display" style={{ fontSize: '3rem', marginBottom: '0.25rem' }}>{user.username}</h1>
+                        <p className="text-muted" style={{ fontSize: '1.125rem' }}>{user.email}</p>
+                    </div>
+                </div>
+            )}
 
-        <div className="user-detail">
-
-        <div className="card">
-
-        <div className="badge user-error">
-
-        {error}
-
+            {user.role === 'CLIENT' && (
+                <div>
+                    <h3 className="title mb-sm border-bottom pb-xs">Protocol Metrics</h3>
+                    <div className="metrics-row mb-md">
+                        <div className="metric-card">
+                            <span className="metric-value">{completedWorkouts}</span>
+                            <span className="metric-label">Completed Sessions</span>
+                        </div>
+                        <div className="metric-card">
+                            <span className="metric-value text-primary">Active</span>
+                            <span className="metric-label">System Status</span>
+                        </div>
+                        <div className="metric-card" style={{ background: 'var(--kv-surface-container-high)' }}>
+                            <span className="metric-value" style={{ color: 'var(--kv-secondary)' }}>Log</span>
+                            <span className="metric-label">Access Telemetry →</span>
+                            <Link to={`/progress/${userId}`} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}></Link>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
+    );
+}
 
-        <Link to="/users" className="btn secondary mt-sm">
-
-        Back to Users
-
-        </Link>
-
-        </div>
-
-        </div>
-
-        );
-
-        }
-
-
-
-        if (!user) {
-
-        return (
-
-        <div className="user-detail">
-
-        <div className="card">
-
-        <p>User not found</p>
-
-        <Link to="/users" className="btn secondary">
-
-        Back to Users
-
-        </Link>
-
-        </div>
-
-        </div>
-
-        );
-
-        }
-
-
-
-        const isClient = user.role === 'CLIENT' || user.role === 'MEMBER';
-
-
-
-        return (
-
-        <div className="user-detail">
-
-        <div className="user-header">
-
-        <Link to="/users" className="btn secondary">← Back to Users</Link>
-
-        <h1 className="h1">User Details</h1>
-
-        </div>
-
-
-
-        {/* User Information */}
-
-        <div className="card user-info-card">
-
-        <div className="user-info-header">
-
-        <div className="user-avatar">
-
-        <span>{user.username.charAt(0).toUpperCase()}</span>
-
-        </div>
-
-        <div className="user-basic-info">
-
-        <h2 className="h2">{user.username}</h2>
-
-        <p className="user-email">{user.email}</p>
-
-        <span className={`badge role-${user.role.toLowerCase()}`}>
-
-        {user.role}
-
-        </span>
-
-        </div>
-
-        </div>
-
-
-
-        <div className="user-details-grid">
-
-        <div className="detail-item">
-
-        <span className="label">User ID</span>
-
-        <span className="value">{user.userId}</span>
-
-        </div>
-
-        <div className="detail-item">
-
-        <span className="label">Join Date</span>
-
-        <span className="value">
-
-        {user.joinDate ? new Date(user.joinDate).toLocaleDateString() : 'N/A'}
-
-        </span>
-
-        </div>
-
-        <div className="detail-item">
-
-        <span className="label">Status</span>
-
-        <span className="value">
-
-        <span className="badge status-active">Active</span>
-
-        </span>
-
-        </div>
-
-        </div>
-
-        </div>
-
-
-
-        {/* Progress Section (only for clients) */}
-
-        {isClient && (
-
-        <div className="card progress-card">
-
-        <div className="section-header">
-
-        <h3 className="h2">Assigned Workout Plans</h3>
-
-        <Link
-
-        to={`/progress/${userId}`}
-
-        className="btn secondary"
-
-        >
-
-        View Full Progress
-
-        </Link>
-
-        </div>
-
-
-
-        {progress.length > 0 ? (
-
-        <div className="progress-list">
-
-        {progress.map((progressItem, index) => (
-
-        <div key={progressItem.progressId || index} className="progress-item">
-
-        <div className="progress-header">
-
-        <div className="plan-info">
-
-        <strong>{progressItem.workoutPlan?.title || 'Workout Plan'}</strong>
-
-        <span className="badge difficulty-badge">
-
-        {progressItem.workoutPlan?.difficulty || 'Unknown'}
-
-        </span>
-
-        </div>
-
-        <div className="progress-percentage">
-
-        <span className="progress-value">{progressItem.completionPercentage}%</span>
-
-        </div>
-
-        </div>
-
-
-
-        <div className="progress-bar-container">
-
-        <div
-
-        className="progress-bar"
-
-        style={{ width: `${progressItem.completionPercentage}%` }}
-
-        ></div>
-
-        </div>
-
-
-
-        <div className="progress-meta">
-
-        <span className="small u-muted">
-
-        Last Updated: {progressItem.lastUpdated ?
-        new Date(progressItem.lastUpdated).toLocaleDateString() : 'Never'}
-
-        </span>
-
-        {progressItem.assignedDate && (
-
-        <span className="small u-muted">
-
-        Assigned: {new Date(progressItem.assignedDate).toLocaleDateString()}
-
-        </span>
-
-        )}
-
-        </div>
-
-        </div>
-
-        ))}
-
-        </div>
-
-        ) : (
-
-        <div className="empty-state">
-
-        <p>No assigned plans found for this client.</p>
-
-        </div>
-
-        )}
-
-        </div>
-
-        )}
-
-
-
-        {/* Actions */}
-
-        <div className="card user-actions">
-
-        <h3 className="h2">Actions</h3>
-
-        <div className="action-buttons">
-
-        <Link to={`/users/${userId}/edit`} className="btn secondary">
-
-        Edit User
-
-        </Link>
-
-        {isClient && (
-
-        <Link to={`/progress/${userId}`} className="btn secondary">
-
-        View Progress
-
-        </Link>
-
-        )}
-
-        <button className="btn secondary" onClick={loadUserDetail}>
-
-        Refresh Data
-
-        </button>
-
-        </div>
-
-        </div>
-
-        </div>
-
-        );
-
-        }
-
-
-
-        export default UserDetail;
+export default UserDetail;

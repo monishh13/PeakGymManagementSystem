@@ -9,7 +9,10 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-        .allowedOrigins("https://8081-ddacecaecfbaebdddeeaedefdaafafbbcf.premiumproject.examly.io") // exact match to frontend
+        .allowedOrigins(
+            "http://localhost:3000",           // React dev server (default)
+            "http://localhost:8081"     // Alternative React port
+        )
         .allowedMethods("GET", "PUT", "POST", "DELETE","OPTIONS")
         .allowedHeaders("*")
         .allowCredentials(true)

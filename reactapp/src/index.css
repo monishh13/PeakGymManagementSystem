@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;1,700&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap');
+
+:root {
+  /* Colors: The High-Contrast Kinetic Palette */
+  --kv-surface-container-lowest: #000000;
+  --kv-surface: #0e0e0e; 
+  --kv-surface-container-low: #131313;
+  --kv-surface-container: #1a1a1a;
+  --kv-surface-container-high: #20201f;
+  --kv-surface-container-highest: #262626;
+
+  /* Primary Accent: Electric Lime */
+  --kv-primary: #f3ffca;
+  --kv-primary-container: #cafd00;
+  --kv-primary-dim: #beee00;
+  --kv-on-primary-container: #4a5e00;
+
+  /* Secondary Accent: Action Orange */
+  --kv-secondary: #ff734a;
+
+  /* Other text/ui colors */
+  --kv-text: #ffffff;
+  --kv-text-muted: #adaaaa;
+  --kv-error: #ff7351;
+  --kv-outline-variant: #484847;
+
+  /* Typography */
+  --kv-font-display: 'Space Grotesk', sans-serif;
+  --kv-font-heading: 'Barlow Condensed', sans-serif;
+  --kv-font-body: 'Inter', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--kv-font-body);
+  background-color: var(--kv-surface);
+  color: var(--kv-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--kv-font-display);
+  letter-spacing: -0.04em;
+  margin-bottom: 0.5rem;
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+a {
+  color: var(--kv-primary);
+  text-decoration: none;
+}
+
+button {
+  font-family: var(--kv-font-body);
+  cursor: pointer;
+}
+
+/* Base utility layouts */
+.kv-app-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--kv-surface-container-lowest);
+}
+
+.kv-main-content {
+  flex-grow: 1;
+  margin-left: 240px; /* offset for fixed sidebar */
+  padding: 2rem;
+  background-color: var(--kv-surface);
+  min-height: 100vh;
+}
+
+.kv-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 2rem;
+}
+
+/* Glassmorphism utility */
+.kv-glass {
+  background: rgba(14, 14, 14, 0.6);
+  backdrop-filter: blur(20px);
+}
+
+/* Scrollbar tweaks */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--kv-surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--kv-outline-variant);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--kv-text-muted);
+}

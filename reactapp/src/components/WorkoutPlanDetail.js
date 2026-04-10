@@ -1,441 +1,105 @@
-// components/WorkoutPlanDetail.js - Workout Plan Detail View
+// components/WorkoutPlanDetail.js - Workout Plan Details
 
 import React, { useState, useEffect } from 'react';
-
-import { useParams, Link } from 'react-router-dom';
-
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../utils/api';
 
-import './LandingPags.css';
-
-
-
 function WorkoutPlanDetail() {
-
     const { planId } = useParams();
-
+    const navigate = useNavigate();
     const [plan, setPlan] = useState(null);
-
     const [exercises, setExercises] = useState([]);
-
     const [loading, setLoading] = useState(true);
-
     const [error, setError] = useState('');
-
-
+    const userRole = localStorage.getItem('userRole');
 
     useEffect(() => {
+        loadPlanDetails();
+    }, [planId]);
 
-        if (planId) {
-
-            loadPlanDetail();
-
+    const loadPlanDetails = async () => {
+        try {
+            setLoading(true);
+            const planData = await api.getWorkoutPlan(planId);
+            setPlan(planData);
+            if (planData.exercises) {
+                setExercises(planData.exercises);
+            } else {
+                const exercisesData = await api.getExercises(planId).catch(() => []);
+                setExercises(exercisesData);
             }
+        } catch (err) {
+            setError(err.message || 'Failed to load plan parameters');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            }, [planId]);
+    if (loading) return <p className="text-muted u-center mt-lg">Decoding plan blueprint...</p>;
+    if (error) return <div className="badge danger mb-lg">{error}</div>;
+    if (!plan) return <div className="badge warning mb-lg">Protocol Not Found</div>;
 
+    return (
+        <div data-testid="plan-detail-container">
+            <div className="flex-space mb-md">
+                <button className="btn secondary small" onClick={() => navigate('/workout-plans')}>← Back to Library</button>
+                {(userRole === 'ADMIN' || userRole === 'TRAINER') && (
+                    <Link to={`/workout-plans/${planId}/edit`} className="btn small">Modify Protocol</Link>
+                )}
+            </div>
 
+            {/* Dark Hero Header */}
+            <div className="hero-banner" style={{ minHeight: '200px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'var(--kv-surface-container-high)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="flex-space" style={{ alignItems: 'flex-start' }}>
+                    <div>
+                        <div className={`badge ${plan.difficulty === 'ADVANCED' ? 'warning' : 'primary'} mb-sm`}>
+                            {plan.difficulty}
+                        </div>
+                        <h1 className="display" style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>{plan.title}</h1>
+                        <p className="text-muted" style={{ maxWidth: '700px', fontSize: '1.125rem' }}>{plan.description}</p>
+                    </div>
+                </div>
+            </div>
 
-            const loadPlanDetail = async () => {
-
-                try {
-
-                    const [planData, exercisesData] = await Promise.all([
-
-                        api.getWorkoutPlan(planId),
-
-                        api.getExercises(planId).catch(() => [])
-
-                    ]);
-
-
-
-                    setPlan(planData);
-
-                    setExercises(exercisesData);
-
-                } catch (err) {
-
-                    setError(err.message || 'Workout plan not found');
-
-                } finally {
-
-                    setLoading(false);
-
-                }
-
-            };
-
-
-
-            if (loading) {
-
-                return (
-
-                    <div className="workout-plan-detail">
-
-                        <div className="card">
-
-                            <p>Loading workout plan...</p>
-
+            {/* Exercise Syllabus */}
+            <h3 className="title mb-md mt-lg" style={{ borderBottom: '1px solid var(--kv-outline-variant)', paddingBottom: '0.5rem' }}>Exercise Sequence</h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {exercises.length > 0 ? exercises.map((ex, index) => (
+                    <div key={ex.id || index} className="card" style={{ display: 'flex', alignItems: 'stretch', gap: '1.5rem', padding: '1.25rem', marginBottom: 0 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minWidth: '60px', borderRight: '1px solid var(--kv-surface-container-highest)', paddingRight: '1.5rem' }}>
+                            <span className="text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Phase</span>
+                            <span className="display" style={{ fontSize: '2rem', color: 'var(--kv-primary)' }}>0{index + 1}</span>
+                        </div>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                            <h4 style={{ fontWeight: 600, fontSize: '1.25rem', marginBottom: '0.25rem' }}>{ex.name}</h4>
+                            <p className="text-muted" style={{ fontSize: '0.875rem' }}>{ex.description || 'Target specific muscular recruitment.'}</p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '2rem', alignItems: 'center', paddingLeft: '1.5rem', borderLeft: '1px solid var(--kv-surface-container-highest)' }}>
+                            <div style={{ textAlign: 'center' }}>
+                                <div className="text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>Sets</div>
+                                <div style={{ fontSize: '1.25rem', fontWeight: 600 }}>{ex.sets}</div>
                             </div>
-
+                            <div style={{ textAlign: 'center' }}>
+                                <div className="text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>Reps</div>
+                                <div style={{ fontSize: '1.25rem', fontWeight: 600 }}>{ex.reps}</div>
                             </div>
-
-                            );
-
-                }
-
-
-
-                if (error) {
-
-                    return (
-
-                        <div className="workout-plan-detail">
-
-                            <div className="card">
-
-                                <div className="badge plan-error">
-
-                                    {error}
-
-                                    </div>
-
-                                    <Link to="/workout-plans" className="btn secondary mt-sm">
-
-                                        Back to Plans
-
-                                        </Link>
-
-                                        </div>
-
-                                        </div>
-
-                    );
-
-                }
-
-
-
-                if (!plan) {
-
-                    return (
-
-                        <div className="workout-plan-detail">
-
-                            <div className="card">
-
-                                <p>Plan not found</p>
-
-                                <Link to="/workout-plans" className="btn secondary">
-
-                                    Back to Plans
-
-                                    </Link>
-
-                                    </div>
-
-                                    </div>
-
-                    );
-
-                }
-
-
-
-                return (
-
-                    <div className="workout-plan-detail">
-
-                        <div className="plan-header">
-
-                            <Link to="/workout-plans" className="btn secondary">← Back to Plans</Link>
-
-                            <h1 className="h1">Workout Plan Details</h1>
-
+                            <div style={{ textAlign: 'center' }}>
+                                <div className="text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>Rest</div>
+                                <div style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--kv-secondary)' }}>{ex.restTimeSeconds || 60}s</div>
                             </div>
-
-
-
-                            {/* Plan Information */}
-
-                            <div className="card plan-info-card">
-
-                                <div className="plan-title-section">
-
-                                    <div className="plan-title-group">
-
-                                        <h2 className="h1 plan-title">{plan.title}</h2>
-
-                                        <span className={`badge difficulty-${plan.difficulty.toLowerCase()}`}>
-
-                                            {plan.difficulty}
-
-                                            </span>
-
-                                            </div>
-
-                                            </div>
-
-
-
-                                            <p className="plan-description">{plan.description}</p>
-
-
-
-                                            <div className="plan-meta-grid">
-
-                                                <div className="meta-item">
-
-                                                    <span className="label">Created by:</span>
-
-                                                    <span className="value">{plan.createdBy?.username || 'Unknown'}</span>
-
-                                                    </div>
-
-                                                    <div className="meta-item">
-
-                                                        <span className="label">Created:</span>
-
-                                                        <span className="value">
-
-                                                            {new Date(plan.creationDate).toLocaleDateString()}
-
-                                                            </span>
-
-                                                            </div>
-
-                                                            <div className="meta-item">
-
-                                                                <span className="label">Plan ID:</span>
-
-                                                                <span className="value">{plan.planId}</span>
-
-                                                                </div>
-
-                                                                <div className="meta-item">
-
-                                                                    <span className="label">Total Exercises:</span>
-
-                                                                    <span className="value">{exercises.length}</span>
-
-                                                                    </div>
-
-                                                                    </div>
-
-                                                                    </div>
-
-
-
-                                                                    {/* Exercises Section */}
-
-                                                                    <div className="card exercises-section">
-
-                                                                        <div className="section-header">
-
-                                                                            <h3 className="h2">Exercises ({exercises.length})</h3>
-
-                                                                            <Link
-
-                                                                            to={`/workout-plans/${planId}/add-exercise`}
-
-                                                                            className="btn secondary"
-
-                                                                            >
-
-                                                                                Add Exercise
-
-                                                                                </Link>
-
-                                                                                </div>
-
-
-
-                                                                                {exercises.length === 0 ? (
-
-                                                                                    <div className="empty-state">
-
-                                                                                        <h4 className="h2">No exercises in this plan</h4>
-
-                                                                                        <p className="u-muted">Add exercises to get started with this workout plan.</p>
-
-                                                                                        <Link
-
-                                                                                        to={`/workout-plans/${planId}/add-exercise`}
-
-                                                                                        className="btn"
-
-                                                                                        >
-
-                                                                                            Add First Exercise
-
-                                                                                            </Link>
-
-                                                                                            </div>
-
-                                                                                ) : (
-
-                                                                                    <div className="exercises-list">
-
-                                                                                        {exercises.map((exercise, index) => (
-
-                                                                                            <div key={exercise.exerciseId || index} className="exercise-card">
-
-                                                                                                <div className="exercise-header">
-
-                                                                                                    <div className="exercise-number">
-
-                                                                                                        <span>{index + 1}</span>
-
-                                                                                                        </div>
-
-                                                                                                        <div className="exercise-info">
-
-                                                                                                            <h4 className="exercise-name">{exercise.name}</h4>
-
-                                                                                                            <p className="exercise-description">{exercise.description}</p>
-
-                                                                                                            </div>
-
-                                                                                                            </div>
-
-
-
-                                                                                                            <div className="exercise-details">
-
-                                                                                                                <div className="exercise-stats">
-
-                                                                                                                    <div className="stat-item">
-
-                                                                                                                        <span className="stat-label">Sets:</span>
-
-                                                                                                                        <span className="stat-value">{exercise.sets}</span>
-
-                                                                                                                        </div>
-
-                                                                                                                        <div className="stat-item">
-
-                                                                                                                            <span className="stat-label">Reps:</span>
-
-                                                                                                                            <span className="stat-value">{exercise.reps}</span>
-
-                                                                                                                            </div>
-
-                                                                                                                            {exercise.restTimeSeconds && (
-
-                                                                                                                                <div className="stat-item">
-
-                                                                                                                                    <span className="stat-label">Rest:</span>
-
-                                                                                                                                    <span className="stat-value">{exercise.restTimeSeconds}s</span>
-
-                                                                                                                                    </div>
-
-                                                                                                                            )}
-
-                                                                                                                            </div>
-
-
-
-                                                                                                                            {exercise.targetMuscles && (
-
-                                                                                                                                <div className="target-muscles">
-
-                                                                                                                                    <span className="label">Target Muscles:</span>
-
-                                                                                                                                    <span className="value">{exercise.targetMuscles}</span>
-
-                                                                                                                                    </div>
-
-                                                                                                                            )}
-
-                                                                                                                            </div>
-
-
-
-                                                                                                                            <div className="exercise-actions">
-
-                                                                                                                                <button className="btn secondary small">
-
-                                                                                                                                    Edit Exercise
-
-                                                                                                                                    </button>
-
-                                                                                                                                    <button className="btn secondary small danger">
-
-                                                                                                                                        Remove
-
-                                                                                                                                        </button>
-
-                                                                                                                                        </div>
-
-                                                                                                                                        </div>
-
-                                                                                        ))}
-
-                                                                                        </div>
-
-                                                                                )}
-
-                                                                                </div>
-
-
-
-                                                                                {/* Action Buttons */}
-
-                                                                                <div className="card plan-actions">
-
-                                                                                    <h3 className="h2">Plan Actions</h3>
-
-                                                                                    <div className="action-buttons">
-
-                                                                                        <Link
-
-                                                                                        to={`/workout-plans/${planId}/edit`}
-
-                                                                                        className="btn"
-
-                                                                                        >
-
-                                                                                            Edit Plan
-
-                                                                                            </Link>
-
-                                                                                            <Link
-
-                                                                                            to={`/workout-plans/${planId}/assign`}
-
-                                                                                            className="btn secondary"
-
-                                                                                            >
-
-                                                                                                Assign to Client
-
-                                                                                                </Link>
-
-                                                                                                <button className="btn secondary" onClick={loadPlanDetail}>
-
-                                                                                                    Refresh Data
-
-                                                                                                    </button>
-
-                                                                                                    <button className="btn secondary danger">
-
-                                                                                                        Delete Plan
-
-                                                                                                        </button>
-
-                                                                                                        </div>
-
-                                                                                                        </div>
-
-                                                                                                        </div>
-
-                );
-
-                                                                                                                            }
-
-
-
-                                                                                                                            export default WorkoutPlanDetail;
+                        </div>
+                    </div>
+                )) : (
+                    <p className="text-muted">No tactical exercises mapped to this protocol yet.</p>
+                )}
+            </div>
+            
+            {userRole === 'CLIENT' && (
+                <button className="btn mt-lg" style={{ width: '100%' }}>Initiate Sequence Now</button>
+            )}
+        </div>
+    );
+}
+
+export default WorkoutPlanDetail;

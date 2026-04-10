@@ -1,25 +1,22 @@
-// components/WorkoutPlanList.js - Workout Plans Management
+// components/WorkoutPlanList.js - Workout Discovery
 
 import React, { useState, useEffect } from 'react';
-
 import { Link } from 'react-router-dom';
-
 import { api } from '../utils/api';
 
-import './LandingPags.css';
-
-
-
 function WorkoutPlanList() {
-
     const [plans, setPlans] = useState([]);
     const [filteredPlans, setFilteredPlans] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [difficultyFilter, setDifficultyFilter] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
+    const [difficultyFilter, setDifficultyFilter] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
+
+    // Hardcode category pills mapping broadly to difficulty and title for demo
+    const pills = ['All Workouts', 'Hypertrophy', 'Endurance', 'Powerlifting', 'Calisthenics', 'Metabolic HIIT'];
+    const [activePill, setActivePill] = useState('All Workouts');
 
     useEffect(() => {
         loadWorkoutPlans();
@@ -27,12 +24,12 @@ function WorkoutPlanList() {
 
     useEffect(() => {
         filterPlans();
-    }, [plans, difficultyFilter, searchTerm]);
+    }, [plans, difficultyFilter, searchTerm, activePill]);
 
     const loadWorkoutPlans = async () => {
         try {
             setLoading(true);
-            const plansData = await api.getWorkoutPlans(currentPage, 10);
+            const plansData = await api.getWorkoutPlans(currentPage, 20); // pulling more for grid
             if (plansData && plansData.content) {
                 setPlans(plansData.content);
                 setTotalPages(plansData.totalPages);
@@ -41,365 +38,126 @@ function WorkoutPlanList() {
                 setTotalPages(1);
             }
         } catch (err) {
-            setError(err.message || 'Failed to fetch plans');
+            setError(err.message || 'Failed to access library');
         } finally {
             setLoading(false);
         }
     };
 
-
-
     const filterPlans = () => {
-
         let filtered = plans;
         if (difficultyFilter) {
-            filtered = filtered.filter(plan => plan.difficulty === difficultyFilter);
+            filtered = filtered.filter(p => p.difficulty === difficultyFilter);
         }
         if (searchTerm) {
-            filtered = filtered.filter(plan =>
-                plan.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                plan.description.toLowerCase().includes(searchTerm.toLowerCase())
-                );
-            }
-            setFilteredPlans(filtered);
-        };
-        const handleDifficultyFilterChange = (e) => {
-            setDifficultyFilter(e.target.value);
-        };
-        const handleSearchChange = (e) => {
-            setSearchTerm(e.target.value);
-        };
-
-        if (loading) {
-            return (
-                <div data-testid="plan-list-container" className="workout-plan-list">
-                    <div className="card">
-                        <p>Loading workout plans...</p>
-                        </div>
-
-                        </div>
-
+            filtered = filtered.filter(p => 
+                (p.title && p.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                (p.description && p.description.toLowerCase().includes(searchTerm.toLowerCase()))
             );
-
         }
-
-
-
-        if (error) {
-
-            return (
-
-                <div data-testid="plan-list-container" className="workout-plan-list">
-
-                    <div className="card">
-
-                        <div className="badge plan-list-error">
-
-                            {error}
-
-                            </div>
-
-                            </div>
-
-                            </div>
-
-            );
-
+        if (activePill !== 'All Workouts') {
+            // Pseudo filter: match keywords in title
+            const kw = activePill.toLowerCase().split(' ')[0];
+            filtered = filtered.filter(p => p.title && p.title.toLowerCase().includes(kw));
         }
+        setFilteredPlans(filtered);
+    };
 
+    if (loading) return <p className="text-muted u-center mt-lg">Indexing Plan Library...</p>;
+    if (error) return <div className="badge danger mb-lg">{error}</div>;
 
+    const userRole = localStorage.getItem('userRole');
 
-        return (
+    return (
+        <div data-testid="plan-list-container">
+            {/* Top Bar with actions */}
+            <div className="flex-space mb-md">
+                <h2 className="headline" style={{ fontSize: '2rem' }}>Discovery</h2>
+                {(userRole === 'ADMIN' || userRole === 'TRAINER') && (
+                    <Link to="/workout-plans/create" className="btn small">+ Add Protocol</Link>
+                )}
+            </div>
 
-            <div data-testid="plan-list-container" className="workout-plan-list">
+            {/* Search and Filters */}
+            <div className="flex-space mb-md">
+                <input 
+                    type="text" 
+                    className="input" 
+                    placeholder="Search protocols..." 
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    style={{ width: '400px' }}
+                />
+                <select 
+                    className="select" 
+                    value={difficultyFilter} 
+                    onChange={e => setDifficultyFilter(e.target.value)}
+                    data-testid="plan-diff-filter"
+                >
+                    <option value="">All Tiers</option>
+                    <option value="BEGINNER">Recruit (Beginner)</option>
+                    <option value="INTERMEDIATE">Operative (Inter.)</option>
+                    <option value="ADVANCED">Elite (Advanced)</option>
+                </select>
+            </div>
 
-                <div className="plan-list-header">
-
-                    <h1 className="h1">Workout Plans</h1>
-
-                    <Link to="/workout-plans/create" className="btn">Create New Plan</Link>
-
+            {/* Pill Filters */}
+            <div className="filters-row">
+                {pills.map(pill => (
+                    <div 
+                        key={pill} 
+                        className={`filter-pill ${activePill === pill ? 'active' : ''}`}
+                        onClick={() => setActivePill(pill)}
+                    >
+                        {pill}
                     </div>
+                ))}
+            </div>
 
-
-
-                    {/* Filters */}
-
-                    <div className="card plan-filters">
-
-                        <div className="filter-row">
-
-                            <div className="filter-group">
-
-                                <label htmlFor="search-plans">Search Plans</label>
-
-                                <input
-
-                                id="search-plans"
-
-                                type="text"
-
-                                className="input"
-
-                                placeholder="Search by title or description..."
-
-                                value={searchTerm}
-
-                                onChange={handleSearchChange}
-
-                                />
-
+            {/* Plans Grid */}
+            <div className="plans-grid">
+                {filteredPlans.map(plan => (
+                    <div key={plan.planId} className="plan-card">
+                        <div className="plan-placeholder-img">
+                            {/* Color code background gradient based on difficulty */}
+                            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: plan.difficulty === 'ADVANCED' ? 'linear-gradient(45deg, #ff734a 0%, #111 60%)' : plan.difficulty === 'INTERMEDIATE' ? 'linear-gradient(45deg, #00e5ff 0%, #111 60%)' : 'linear-gradient(45deg, #181818 0%, #0a0a0a 100%)', opacity: 0.3 }} />
+                            
+                            <span className={`badge ${plan.difficulty === 'ADVANCED' ? 'warning' : plan.difficulty === 'INTERMEDIATE' ? 'primary' : 'neutral'}`} style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+                                {plan.difficulty}
+                            </span>
+                        </div>
+                        <div className="plan-card-body">
+                            <h3 className="title mb-xs">{plan.title}</h3>
+                            <p className="text-muted" style={{ fontSize: '0.875rem', flex: 1, marginBottom: '1.5rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                {plan.description}
+                            </p>
+                            <div className="flex-space">
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <span className="text-muted" style={{ fontSize: '0.75rem' }}>⏱ 4 WEEKS</span>
                                 </div>
-
-                                <div className="filter-group">
-
-                                    <label htmlFor="difficulty-filter">Filter by Difficulty</label>
-
-                                    <select
-
-                                    id="difficulty-filter"
-
-                                    data-testid="plan-diff-filter"
-
-                                    className="input"
-
-                                    value={difficultyFilter}
-
-                                    onChange={handleDifficultyFilterChange}
-
-                                    >
-
-                                        <option value="">All Difficulties</option>
-
-                                        <option value="BEGINNER">Beginner</option>
-
-                                        <option value="INTERMEDIATE">Intermediate</option>
-
-                                        <option value="ADVANCED">Advanced</option>
-
-                                        </select>
-
-                                        </div>
-
-                                        </div>
-
-                                        </div>
-
-
-
-                                        {/* Plans Grid */}
-
-                                        <div className="plans-container">
-
-                                            {filteredPlans.length === 0 ? (
-
-                                                <div className="card empty-state">
-
-                                                    <h3 className="h2">No workout plans found</h3>
-
-                                                    {(difficultyFilter || searchTerm) ? (
-
-                                                        <div>
-
-                                                            <p className="u-muted">Try adjusting your filters</p>
-
-                                                            <button
-
-                                                            className="btn secondary"
-
-                                                            onClick={() => {
-
-                                                                setDifficultyFilter('');
-
-                                                                setSearchTerm('');
-
-                                                            }}
-
-                                                            >
-
-                                                                Clear Filters
-
-                                                                </button>
-
-                                                                </div>
-
-                                                    ) : (
-
-                                                        <div>
-
-                                                            <p className="u-muted">Get started by creating your first workout plan</p>
-
-                                                            <Link to="/workout-plans/create" className="btn">
-
-                                                                Create Workout Plan
-
-                                                                </Link>
-
-                                                                </div>
-
-                                                    )}
-
-                                                    </div>
-
-                                                    ) : (
-
-                                                        <div className="plans-grid">
-
-                                                            {filteredPlans.map(plan => (
-
-                                                                <div key={plan.planId} className="card plan-card">
-
-                                                                    <div className="plan-header">
-
-                                                                        <h3 className="plan-title">{plan.title}</h3>
-
-                                                                        <span className={`badge difficulty-${plan.difficulty.toLowerCase()}`}>
-
-                                                                            {plan.difficulty}
-
-                                                                            </span>
-
-                                                                            </div>
-
-
-
-                                                                            <p className="plan-description">{plan.description}</p>
-
-
-
-                                                                            <div className="plan-meta">
-
-                                                                                <div className="meta-row">
-
-                                                                                    <span className="label">Created by:</span>
-
-                                                                                    <span className="value">{plan.createdBy?.username || 'Unknown'}</span>
-
-                                                                                    </div>
-
-                                                                                    <div className="meta-row">
-
-                                                                                        <span className="label">Created:</span>
-
-                                                                                        <span className="value">
-
-                                                                                            {new Date(plan.creationDate).toLocaleDateString()}
-
-                                                                                            </span>
-
-                                                                                            </div>
-
-                                                                                            </div>
-
-
-
-                                                                                            <div className="plan-actions">
-
-                                                                                                <Link
-
-                                                                                                to={`/workout-plans/${plan.planId}`}
-
-                                                                                                className="btn secondary"
-
-                                                                                                >
-
-                                                                                                    View Details
-
-                                                                                                    </Link>
-
-                                                                                                    <Link
-
-                                                                                                    to={`/workout-plans/${plan.planId}/edit`}
-
-                                                                                                    className="btn secondary"
-
-                                                                                                    >
-
-                                                                                                        Edit
-
-                                                                                                        </Link>
-
-                                                                                                        </div>
-
-                                                                                                        </div>
-
-                                                            ))}
-
-                                                            </div>
-
-                                                    )}
-
-                                                    </div>
-                                            <div className="pagination-controls" style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', gap: '10px' }}>
-                                                <button 
-                                                    className="btn secondary" 
-                                                    disabled={currentPage === 0} 
-                                                    onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
-                                                >
-                                                    Previous
-                                                </button>
-                                                <span style={{ alignSelf: 'center' }}>Page {currentPage + 1} of {Math.max(1, totalPages)}</span>
-                                                <button 
-                                                    className="btn secondary" 
-                                                    disabled={currentPage >= totalPages - 1} 
-                                                    onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
-                                                >
-                                                    Next
-                                                </button>
-                                            </div>
-
-
-
-                                                    {/* Summary Stats */}
-
-                                                    <div className="card plan-stats">
-
-                                                        <h3 className="h2">Plan Statistics</h3>
-
-                                                        <div className="stats-grid">
-
-                                                            <div className="metric">
-
-                                                                <span className="num">{plans.length}</span>
-
-                                                                <span className="label">Total Plans</span>
-
-                                                                </div>
-
-                                                                <div className="metric">
-
-                                                                    <span className="num">{plans.filter(p => p.difficulty === 'BEGINNER').length}</span>
-
-                                                                    <span className="label">Beginner</span>
-
-                                                                    </div>
-
-                                                                    <div className="metric">
-
-                                                                        <span className="num">{plans.filter(p => p.difficulty === 'INTERMEDIATE').length}</span>
-
-                                                                        <span className="label">Intermediate</span>
-
-                                                                        </div>
-
-                                                                        <div className="metric">
-
-                                                                            <span className="num">{plans.filter(p => p.difficulty === 'ADVANCED').length}</span>
-
-                                                                            <span className="label">Advanced</span>
-
-                                                                            </div>
-
-                                                                            </div>
-
-                                                                            </div>
-
-                                                                            </div>
-
-        );
-
-                                                            }
-
-
-
-                                                            export default WorkoutPlanList;
+                                <Link to={`/workout-plans/${plan.planId}`} className="btn secondary small">Inspect</Link>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {filteredPlans.length === 0 && (
+                <div className="u-center" style={{ padding: '4rem 0' }}>
+                    <p className="text-muted">No protocols match the specified parameters.</p>
+                </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex-space mt-lg" style={{ justifyContent: 'center', gap: '1rem' }}>
+                    <button className="btn secondary small" disabled={currentPage === 0} onClick={() => setCurrentPage(p => p - 1)}>Prev</button>
+                    <span className="text-muted" style={{ fontSize: '0.875rem' }}>Sector {currentPage + 1} of {totalPages}</span>
+                    <button className="btn secondary small" disabled={currentPage >= totalPages - 1} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
+                </div>
+            )}
+        </div>
+    );
+}
+
+export default WorkoutPlanList;

@@ -1,8 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './index.css';           // Kinetic Volt design tokens FIRST
+import './components/theme.css'; // Component classes SECOND
 import App from './App';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import '../src/components/theme.css';
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>

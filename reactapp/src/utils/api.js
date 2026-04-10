@@ -1,6 +1,7 @@
 // utils/api.js - API utility functions
 
-const API_BASE_URL = 'https://8080-ddacecaecfbaebdddeeaedefdaafafbbcf.premiumproject.examly.io';
+// Use environment variable or default to localhost for development
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
 
 

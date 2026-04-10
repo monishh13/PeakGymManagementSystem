@@ -1,307 +1,104 @@
-// components/ClientDashboard.js - Client Interface
+// components/ClientDashboard.js - Kinetic Volt Client Interface
 
 import React, { useState, useEffect } from 'react';
-
 import { Link } from 'react-router-dom';
-
 import { api } from '../utils/api';
 
-import './LandingPags.css';
-
-
-
 function ClientDashboard() {
+    const [workoutPlan, setWorkoutPlan] = useState(null);
+    const [progress, setProgress] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
-const [workoutPlan, setWorkoutPlan] = useState(null);
+    useEffect(() => {
+        loadClientData();
+    }, []);
 
-const [progress, setProgress] = useState(null);
+    const loadClientData = async () => {
+        try {
+            const userId = localStorage.getItem('userId');
+            const [planData, progressData] = await Promise.all([
+                api.getMyWorkoutPlan().catch(() => null),
+                api.getUserProgress(userId).catch(() => [])
+            ]);
+            
+            setWorkoutPlan(planData);
+            setProgress(progressData || []);
+        } catch (err) {
+            setError(err.message || 'Failed to sync temporal data');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-const [loading, setLoading] = useState(true);
+    if (loading) return <p className="text-muted u-center mt-lg">Syncing biomechanics profile...</p>;
+    if (error) return <div className="badge danger mb-lg">{error}</div>;
 
-const [error, setError] = useState('');
+    const completed = Array.isArray(progress) ? progress.length : 0;
 
+    return (
+        <div>
+            {/* Today's Workout Hero */}
+            {workoutPlan ? (
+                <div className="hero-banner" style={{ minHeight: '300px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <div className="badge primary mb-sm" style={{ alignSelf: 'flex-start' }}>ACTIVE PROTOCOL</div>
+                    <h1 className="display" style={{ fontSize: '3.5rem', marginBottom: '0.5rem', maxWidth: '800px' }}>
+                        {workoutPlan.title}
+                    </h1>
+                    <p className="text-muted mb-md" style={{ maxWidth: '600px', fontSize: '1.125rem' }}>
+                        {workoutPlan.description}
+                    </p>
+                    <div className="flex-gap mt-sm">
+                        <Link to={`/workout-plans/${workoutPlan.planId}`} className="btn">Initiate Sequence</Link>
+                        <Link to={`/progress/${localStorage.getItem('userId')}`} className="btn secondary">Log Output</Link>
+                    </div>
+                </div>
+            ) : (
+                <div className="card u-center mb-lg" style={{ padding: '4rem 2rem' }}>
+                    <h2 className="headline text-muted mb-sm">No Active Protocol</h2>
+                    <p className="text-muted mb-md">Awaiting assignment from your commanding trainer.</p>
+                    <Link to="/workout-plans" className="btn secondary">Browse Library</Link>
+                </div>
+            )}
 
+            {/* Progress Metrics */}
+            <h3 className="title mb-md" style={{ marginTop: '2rem' }}>Metabolic Output</h3>
+            <div className="metrics-row">
+                <div className="metric-card">
+                    <span className="metric-value text-primary">{completed}</span>
+                    <span className="metric-label">Completed Sessions</span>
+                </div>
+                <div className="metric-card">
+                    <span className="metric-value">0<span style={{ fontSize: '1rem', color: 'var(--kv-text-muted)' }}>kg</span></span>
+                    <span className="metric-label">Volume Metric</span>
+                </div>
+                <div className="metric-card" style={{ background: 'var(--kv-surface-container-high)' }}>
+                    <span className="metric-value" style={{ color: 'var(--kv-secondary)' }}>Log</span>
+                    <span className="metric-label">Submit Data →</span>
+                    <Link to={`/progress/${localStorage.getItem('userId')}`} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}></Link>
+                </div>
+            </div>
 
-useEffect(() => {
-
-loadClientData();
-
-}, []);
-
-
-
-const loadClientData = async () => {
-
-try {
-
-const userId = localStorage.getItem('userId');
-
-const [planData, progressData] = await Promise.all([
-
-api.getMyWorkoutPlan().catch(() => null),
-
-api.getUserProgress(userId).catch(() => [])
-
-]);
-
-
-
-setWorkoutPlan(planData);
-
-setProgress(progressData);
-
-} catch (err) {
-
-setError(err.message || 'Failed to load data');
-
-} finally {
-
-setLoading(false);
-
+            {/* Preview Next Exercises */}
+            {workoutPlan?.exercises?.length > 0 && (
+                <div className="mt-lg">
+                    <h3 className="title mb-md">Syllabus Cache</h3>
+                    <div className="plans-grid">
+                        {workoutPlan.exercises.slice(0, 3).map((ex, i) => (
+                            <div key={ex.id || i} className="card" style={{ padding: '1.25rem' }}>
+                                <div className="badge neutral mb-sm">Move {i + 1}</div>
+                                <h4 style={{ fontWeight: 600, fontSize: '1.25rem', marginBottom: '0.5rem' }}>{ex.name}</h4>
+                                <div className="flex-space" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '0.75rem', marginTop: '0.5rem' }}>
+                                    <span className="text-muted" style={{ fontSize: '0.875rem' }}>{ex.sets} Sets × {ex.reps} Reps</span>
+                                    {ex.restTimeSeconds && <span className="text-primary" style={{ fontSize: '0.875rem' }}>{ex.restTimeSeconds}s Rest</span>}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 }
-
-};
-
-
-
-if (loading) {
-
-return (
-
-<div className="client-dashboard">
-
-<div className="card">
-
-<p>Loading your workout data...</p>
-
-</div>
-
-</div>
-
-);
-
-}
-
-
-
-if (error) {
-
-return (
-
-<div className="client-dashboard">
-
-<div className="badge client-error">Error: {error}</div>
-
-</div>
-
-);
-
-}
-
-
-
-const progressSummary = Array.isArray(progress) ? {
-
-completedWorkouts: progress.length,
-
-currentStreak: progress.filter(p => p.completionPercentage >= 100).length,
-
-totalWeight: progress.reduce((sum, p) => sum + (p.totalWeight || 0), 0),
-
-avgCompletion: progress.length > 0 ?
-
-Math.round(progress.reduce((sum, p) => sum + p.completionPercentage, 0) / progress.length) : 0
-
-} : {
-
-completedWorkouts: 0,
-
-currentStreak: 0,
-
-totalWeight: 0,
-
-avgCompletion: 0
-
-};
-
-
-
-return (
-
-<div className="client-dashboard">
-
-<h2 className="h2">Client Dashboard</h2>
-
-
-
-{/* Today's Workout Plan */}
-
-<div className="card mb-sm">
-
-<h3 className="h2">Today's Workout</h3>
-
-{workoutPlan ? (
-
-<div className="workout-preview">
-
-<div className="workout-header">
-
-<strong className="workout-title">{workoutPlan.title}</strong>
-
-<span className="badge difficulty-badge">{workoutPlan.difficulty}</span>
-
-</div>
-
-<p className="small workout-description">{workoutPlan.description}</p>
-
-
-
-{workoutPlan.exercises && workoutPlan.exercises.length > 0 && (
-
-<div className="exercises-preview">
-
-<h4 className="small">Next Exercises:</h4>
-
-<div className="exercises">
-
-{workoutPlan.exercises.slice(0, 3).map((exercise, index) => (
-
-<div key={exercise.id || index} className="exercise">
-
-<strong>{exercise.name}</strong>
-
-<p className="small">{exercise.sets} sets × {exercise.reps} reps</p>
-
-{exercise.restTimeSeconds && (
-
-<p className="small u-muted">Rest: {exercise.restTimeSeconds}s</p>
-
-)}
-
-</div>
-
-))}
-
-</div>
-
-</div>
-
-)}
-
-
-
-<Link to={`/workout-plans/${workoutPlan.planId}`} className="btn">
-
-View Full Plan
-
-</Link>
-
-</div>
-
-) : (
-
-<div className="empty-state">
-
-<p className="u-muted">No workout plan assigned yet.</p>
-
-<p className="small">Contact your trainer to get started!</p>
-
-</div>
-
-)}
-
-</div>
-
-
-
-{/* Progress Summary */}
-
-<div className="card mb-sm">
-
-<h3 className="h2">Progress Summary</h3>
-
-<div className="progress-grid">
-
-<div className="metric">
-
-<span className="num">{progressSummary.completedWorkouts}</span>
-
-<span className="label">Total Workouts</span>
-
-</div>
-
-<div className="metric">
-
-<span className="num">{progressSummary.currentStreak}</span>
-
-<span className="label">Completed Plans</span>
-
-</div>
-
-<div className="metric">
-
-<span className="num">{progressSummary.totalWeight}kg</span>
-
-<span className="label">Total Weight Lifted</span>
-
-</div>
-
-<div className="metric">
-
-<span className="num">{progressSummary.avgCompletion}%</span>
-
-<span className="label">Avg Completion</span>
-
-</div>
-
-</div>
-
-<Link
-
-to={`/progress/${localStorage.getItem('userId')}`}
-
-className="btn secondary mt-sm"
-
->
-
-View Detailed Progress
-
-</Link>
-
-</div>
-
-
-
-{/* Quick Actions */}
-
-<div className="card">
-
-<h3 className="h2">Quick Actions</h3>
-
-<div className="action-buttons">
-
-<Link to="/workout-plans" className="btn secondary">Browse Plans</Link>
-
-{workoutPlan && (
-
-<Link to={`/progress/${localStorage.getItem('userId')}`} className="btn secondary">
-
-Log Progress
-
-</Link>
-
-)}
-
-</div>
-
-</div>
-
-</div>
-
-);
-
-}
-
-
 
 export default ClientDashboard;

@@ -1,1 +1,2 @@
-export const API_BASE_URL = 'https://8080-ddacecaecfbaebdddeeaedefdaafafbbcf.premiumproject.examly.io/api';
+// Use environment variable or default to localhost for development
+export const API_BASE_URL = (process.env.REACT_APP_API_URL || 'http://localhost:8080') + '/api';
