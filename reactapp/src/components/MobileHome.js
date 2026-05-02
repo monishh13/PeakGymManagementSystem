@@ -1,70 +1,119 @@
-// components/MobileHome.js - Mobile Layout 
+// components/MobileHome.js - Mobile-optimised Layout
 
 import React from 'react';
 import { Link } from 'react-router-dom';
 
 function MobileHome() {
     return (
-        <div style={{ maxWidth: '480px', margin: '0 auto', background: 'var(--kv-surface-container-lowest)', minHeight: '100vh', paddingBottom: '80px', paddingTop: '1rem', position: 'relative' }}>
-            
-            <div className="flex-space" style={{ padding: '0 1.5rem', marginBottom: '2rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div className="avatar" style={{ width: '40px', height: '40px' }}>P</div>
-                    <div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--kv-text-muted)', textTransform: 'uppercase' }}>Good Morning</div>
-                        <div style={{ fontWeight: 600 }}>Athlete</div>
+        <div style={{
+            minHeight: '100vh',
+            background: 'var(--kv-surface-container-lowest)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+        }}>
+            <div style={{
+                width: '100%',
+                maxWidth: '440px',
+                minHeight: '100vh',
+                display: 'flex',
+                flexDirection: 'column',
+                paddingBottom: '80px',
+                position: 'relative',
+            }}>
+
+                {/* Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div className="avatar" style={{ width: '40px', height: '40px', fontSize: '1.1rem' }}>P</div>
+                        <div>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--kv-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Good Morning</div>
+                            <div style={{ fontWeight: 600, fontSize: '1rem' }}>Athlete</div>
+                        </div>
+                    </div>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--kv-surface-container-low)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
+                        🔔
                     </div>
                 </div>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--kv-surface-container-low)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span role="img" aria-label="bell">🔔</span>
-                </div>
-            </div>
 
-            <div style={{ padding: '0 1.5rem' }}>
-                <h1 className="display" style={{ fontSize: '2rem', marginBottom: '1.5rem' }}>Ready to Train?</h1>
-                
-                <div className="card floating mb-lg" style={{ background: 'var(--kv-primary-container)', color: 'var(--kv-on-primary-container)', position: 'relative', overflow: 'hidden' }}>
-                    <div style={{ position: 'relative', zIndex: 2 }}>
-                        <div className="badge" style={{ background: 'rgba(0,0,0,0.1)', color: 'inherit', marginBottom: '0.5rem' }}>TODAY'S WORKOUT</div>
-                        <h2 className="headline" style={{ color: 'inherit' }}>Hypertrophy Day A</h2>
-                        <p style={{ opacity: 0.8, marginBottom: '1.5rem' }}>45 mins • Upper Body Focus</p>
-                        <button className="btn" style={{ background: '#111', color: '#fff', width: '100%' }}>Start Session</button>
+                {/* Body */}
+                <div style={{ padding: '0 1.5rem', flex: 1 }}>
+                    <h1 style={{ fontFamily: 'var(--kv-font-display)', fontSize: '2.25rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '1.5rem' }}>
+                        Ready to Train?
+                    </h1>
+
+                    {/* Today's Workout Card */}
+                    <div style={{
+                        background: 'var(--kv-primary-container)',
+                        color: 'var(--kv-on-primary-container)',
+                        borderRadius: '1.25rem',
+                        padding: '1.5rem',
+                        marginBottom: '2rem',
+                        position: 'relative',
+                        overflow: 'hidden',
+                    }}>
+                        <div style={{ position: 'relative', zIndex: 2 }}>
+                            <span className="badge" style={{ background: 'rgba(0,0,0,0.12)', color: 'inherit', marginBottom: '0.75rem', display: 'inline-block', fontSize: '0.65rem' }}>
+                                TODAY'S WORKOUT
+                            </span>
+                            <div style={{ fontFamily: 'var(--kv-font-display)', fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '0.25rem' }}>
+                                Hypertrophy Day A
+                            </div>
+                            <p style={{ fontSize: '0.875rem', opacity: 0.75, marginBottom: '1.25rem' }}>45 mins • Upper Body Focus</p>
+                            <button className="btn" style={{ background: '#111', color: '#fff', width: '100%', fontWeight: 600 }}>
+                                Start Session
+                            </button>
+                        </div>
+                        <div style={{ position: 'absolute', right: '-16px', bottom: '-16px', fontSize: '8rem', opacity: 0.08, lineHeight: 1, pointerEvents: 'none' }}>⚡</div>
                     </div>
-                    {/* Decorative element */}
-                    <div style={{ position: 'absolute', right: '-20px', bottom: '-20px', fontSize: '10rem', opacity: 0.1, lineHeight: 1 }}>⚡</div>
-                </div>
 
-                <div className="flex-space mb-md">
-                    <h3 className="title">Weekly Progress</h3>
-                    <Link to="/login" className="text-primary" style={{ fontSize: '0.875rem' }}>View All</Link>
-                </div>
-
-                <div className="metrics-row mb-md">
-                    <div className="metric-card" style={{ padding: '1rem', minWidth: '100px' }}>
-                        <span className="metric-value" style={{ fontSize: '1.5rem' }}>4/5</span>
-                        <span className="metric-label" style={{ fontSize: '0.75rem' }}>Workouts</span>
+                    {/* Weekly Progress */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <span style={{ fontFamily: 'var(--kv-font-display)', fontSize: '1.25rem', fontWeight: 600 }}>Weekly Progress</span>
+                        <Link to="/login" style={{ color: 'var(--kv-primary-container)', fontSize: '0.875rem', fontWeight: 500 }}>View All</Link>
                     </div>
-                    <div className="metric-card" style={{ padding: '1rem', minWidth: '100px' }}>
-                        <span className="metric-value" style={{ fontSize: '1.5rem' }}>3.2k</span>
-                        <span className="metric-label" style={{ fontSize: '0.75rem' }}>Vol (kg)</span>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        {[{ v: '4/5', l: 'Workouts' }, { v: '3.2k', l: 'Vol (kg)' }].map(item => (
+                            <div key={item.l} className="card" style={{ padding: '1.25rem' }}>
+                                <div style={{ fontFamily: 'var(--kv-font-display)', fontSize: '1.75rem', fontWeight: 700, lineHeight: 1, marginBottom: '0.375rem' }}>{item.v}</div>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--kv-text-muted)' }}>{item.l}</div>
+                            </div>
+                        ))}
                     </div>
                 </div>
-            </div>
 
-            {/* Mobile Bottom Nav */}
-            <div style={{ position: 'fixed', bottom: 0, left: 0, width: '100%', maxWidth: '480px', left: '50%', transform: 'translateX(-50%)', background: 'var(--kv-surface-container-high)', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-around', padding: '1rem' }}>
-                <div style={{ color: 'var(--kv-primary)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-                    <span role="img" aria-label="home" style={{ fontSize: '1.25rem' }}>🏠</span>
-                    <span style={{ fontSize: '0.65rem', fontWeight: 600 }}>Home</span>
+                {/* Bottom Nav – fixed relative to the inner column */}
+                <div style={{
+                    position: 'fixed',
+                    bottom: 0,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '100%',
+                    maxWidth: '440px',
+                    background: 'var(--kv-surface-container-highest)',
+                    borderTop: '1px solid rgba(255,255,255,0.06)',
+                    display: 'flex',
+                    justifyContent: 'space-around',
+                    padding: '0.875rem 0',
+                    zIndex: 90,
+                }}>
+                    {[
+                        { icon: '🏠', label: 'Home', to: '/mobile-home', active: true },
+                        { icon: '🔍', label: 'Discover', to: '/login' },
+                        { icon: '👤', label: 'Profile', to: '/login' },
+                    ].map(item => (
+                        <Link key={item.label} to={item.to} style={{
+                            color: item.active ? 'var(--kv-primary-container)' : 'var(--kv-text-muted)',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem',
+                            textDecoration: 'none',
+                        }}>
+                            <span style={{ fontSize: '1.25rem' }}>{item.icon}</span>
+                            <span style={{ fontSize: '0.65rem', fontWeight: item.active ? 600 : 400 }}>{item.label}</span>
+                        </Link>
+                    ))}
                 </div>
-                <Link to="/login" style={{ color: 'var(--kv-text-muted)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-                    <span role="img" aria-label="search" style={{ fontSize: '1.25rem' }}>🔍</span>
-                    <span style={{ fontSize: '0.65rem' }}>Discover</span>
-                </Link>
-                <Link to="/login" style={{ color: 'var(--kv-text-muted)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-                    <span role="img" aria-label="profile" style={{ fontSize: '1.25rem' }}>👤</span>
-                    <span style={{ fontSize: '0.65rem' }}>Profile</span>
-                </Link>
+
             </div>
         </div>
     );

@@ -5,48 +5,70 @@ import { Link } from 'react-router-dom';
 
 function LandingPage() {
     return (
-        <div data-testid="landing-container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '4rem 2rem' }}>
-            
-            <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
-                <header className="flex-space mb-lg">
-                    <div className="brand-logo" style={{ marginBottom: 0 }}>
-                        <span className="brand-title">PEAK</span>
-                        <span className="brand-subtitle">KINETIC VOLT PRECISION</span>
+        <div
+            data-testid="landing-container"
+            style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--kv-surface)' }}
+        >
+            <div style={{ maxWidth: '1280px', width: '100%', margin: '0 auto', padding: '3rem 2.5rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                
+                {/* Nav */}
+                <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4rem' }}>
+                    <div>
+                        <div style={{ fontFamily: 'var(--kv-font-display)', fontSize: '1.5rem', fontStyle: 'italic', fontWeight: 700, letterSpacing: '-0.05em', color: 'var(--kv-text)', lineHeight: 1 }}>PEAK</div>
+                        <div style={{ fontSize: '0.6rem', letterSpacing: '0.15em', color: 'var(--kv-text-muted)', marginTop: '0.2rem', textTransform: 'uppercase' }}>KINETIC VOLT PRECISION</div>
                     </div>
                     <Link to="/login" className="btn secondary small">Sign In</Link>
                 </header>
 
-                <div className="hero-banner" style={{ minHeight: '600px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    <div style={{ position: 'relative', zIndex: 10, maxWidth: '800px' }}>
-                        <div className="badge primary mb-sm">SUMMER SERIES</div>
-                        <h1 className="display" style={{ fontSize: '5rem', marginBottom: '1rem', textTransform: 'uppercase' }}>
-                            UNLEASH THE <br/>
-                            <span style={{ color: 'var(--kv-primary)', fontStyle: 'italic' }}>INNER BEAST</span>
+                {/* Hero Banner */}
+                <div
+                    className="hero-banner"
+                    style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4rem 3rem', marginBottom: '2rem' }}
+                >
+                    <div>
+                        <span className="badge primary" style={{ marginBottom: '1.5rem', display: 'inline-block' }}>SUMMER SERIES</span>
+                        <h1
+                            style={{
+                                fontFamily: 'var(--kv-font-display)',
+                                fontSize: 'clamp(3rem, 7vw, 6rem)',
+                                fontWeight: 700,
+                                lineHeight: 1.05,
+                                letterSpacing: '-0.04em',
+                                textTransform: 'uppercase',
+                                marginBottom: '1.5rem',
+                                color: 'var(--kv-text)',
+                            }}
+                        >
+                            UNLEASH THE
+                            <br />
+                            <span style={{ color: 'var(--kv-primary-container)', fontStyle: 'italic' }}>INNER BEAST</span>
                         </h1>
-                        <p style={{ fontSize: '1.25rem', color: 'var(--kv-text-muted)', maxWidth: '600px', marginBottom: '2rem', lineHeight: 1.6 }}>
+                        <p style={{ fontSize: '1.125rem', color: 'var(--kv-text-muted)', maxWidth: '560px', marginBottom: '2.5rem', lineHeight: 1.65 }}>
                             Experience our new 8-week periodization program designed for maximum hypertrophy and explosive power. Developed by Olympic level coaches.
                         </p>
-                        
-                        <div className="flex-gap">
-                            <Link to="/login" className="btn" style={{ padding: '1rem 2rem', fontSize: '1.125rem' }}>Explore Platform <span style={{ marginLeft: '0.5rem' }}>→</span></Link>
-                            <Link to="/mobile-home" className="btn secondary" style={{ padding: '1rem 2rem', fontSize: '1.125rem' }}>Preview Mobile</Link>
+                        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                            <Link to="/login" className="btn" style={{ padding: '1rem 2rem', fontSize: '1.0625rem' }}>
+                                Explore Platform <span style={{ marginLeft: '0.5rem' }}>→</span>
+                            </Link>
+                            <Link to="/mobile-home" className="btn secondary" style={{ padding: '1rem 2rem', fontSize: '1.0625rem' }}>
+                                Preview Mobile
+                            </Link>
                         </div>
                     </div>
                 </div>
 
-                <div className="metrics-row mt-lg">
-                    <div className="metric-card" style={{ background: 'transparent', border: 'none', padding: '1rem 0' }}>
-                        <span className="metric-value text-primary">Personalized</span>
-                        <span className="metric-label" style={{ fontSize: '1rem' }}>Workout Plans</span>
-                    </div>
-                    <div className="metric-card" style={{ background: 'transparent', border: 'none', padding: '1rem 0' }}>
-                        <span className="metric-value text-primary">Real-time</span>
-                        <span className="metric-label" style={{ fontSize: '1rem' }}>Progress Tracking</span>
-                    </div>
-                    <div className="metric-card" style={{ background: 'transparent', border: 'none', padding: '1rem 0' }}>
-                        <span className="metric-value text-primary">Precision</span>
-                        <span className="metric-label" style={{ fontSize: '1rem' }}>Data Analytics</span>
-                    </div>
+                {/* Feature Row */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+                    {[
+                        { stat: 'Personalized', label: 'Workout Plans' },
+                        { stat: 'Real-time', label: 'Progress Tracking' },
+                        { stat: 'Precision', label: 'Data Analytics' },
+                    ].map((item) => (
+                        <div key={item.label} className="card" style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+                            <div style={{ fontFamily: 'var(--kv-font-display)', fontSize: '1.75rem', fontWeight: 700, color: 'var(--kv-primary-container)', marginBottom: '0.5rem' }}>{item.stat}</div>
+                            <div style={{ color: 'var(--kv-text-muted)', fontSize: '0.9375rem' }}>{item.label}</div>
+                        </div>
+                    ))}
                 </div>
 
             </div>
